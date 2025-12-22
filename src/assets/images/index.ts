@@ -1,0 +1,32 @@
+const IMAGES = {
+  logo:require('./logo.png'),
+  profile: require('../images/profile.jpg'),
+  google:require('../../assets/iconimg/google.png'),
+  facebook:require('../../assets/iconimg/facebok.png'),
+  ios:require('../../assets/iconimg/ios.png'),
+  clock:require('../../assets/iconimg/clock.png'),
+  youtube:require('../../assets/iconimg/youtube.png'),
+  whattsapp:require('../../assets/iconimg/whatssapp.jpg'),
+  calculator:require('../../assets/iconimg/calculator.png'),
+  camera:require('../../assets/iconimg/camera.png'),
+  chrome:require('../../assets/iconimg/chrome.png'),
+  gallery:require('../../assets/iconimg/gallery.png'),
+  gmail:require('../../assets/iconimg/gmail.png'),
+  instagram:require('../../assets/iconimg/instagram.png'),
+  messages:require('../../assets/iconimg/messages.png'),
+  netflix:require('../../assets/iconimg/netflix.png'),
+  phone:require('../../assets/iconimg/phone.png'),
+  settings:require('../../assets/iconimg/settings.png'),
+  telegram:require('../../assets/iconimg/telegram.png'),
+  truecaller:require('../../assets/iconimg/trueecaller.png'),
+  univercel:require('../../assets/iconimg/univercal.jpg'),
+  x:require('../../assets/iconimg/x.png'),
+  amazone:require('../../assets/iconimg/amazone.png'),
+  snapchat:require('../../assets/iconimg/snapchat.png'),
+  tiktoke:require('../../assets/iconimg/tiktoke.png'),
+  spotify:require('../iconimg/spotify.png'),
+  systemApps:require('../iconimg/systemApps.png'),
+  
+};
+
+export default IMAGES;
