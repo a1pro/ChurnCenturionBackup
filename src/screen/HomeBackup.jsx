@@ -122,7 +122,7 @@ const Home = () => {
         console.error('Unexpected response status:', res.status);
         Alert.alert('Error', `Unexpected response status: ${res.status}`);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error(
         'Error sending user details:',
         error.response?.data || error.message
@@ -135,7 +135,7 @@ const Home = () => {
   };
 
   useEffect(() => {
-    const handleSimilarAppDetected = async (packageName: string) => {
+    const handleSimilarAppDetected = async (packageName) => {
       Alert.alert(
         'Similar App Detected',
         `Similar app with package name ${packageName} detected.`

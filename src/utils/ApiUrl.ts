@@ -1,10 +1,12 @@
-export const base_url = 'https://churn.a1professionals.net/';
+/* eslint-disable prettier/prettier */
+export const base_url = 'https://churn.a1professionals.net/api/v1/';
 
 export const Base_Url = {
-  register:`${base_url}api/v1/device/register`,
-  exist:`${base_url}api/v1/check/device`,
-  sendAppUsagesData:`${base_url}api/v1/habit/data`,
-  getAppUsagesData:`${base_url}api/v1/habit/get`,
+  register:`${base_url}device/register`,
+  exist:`${base_url}check/device`,
+  sendAppUsagesData:`${base_url}habit/data`,
+  getAppUsagesData:`${base_url}habit/get`,
+  dynmicAppList:`${base_url}get/appnames`,
 };
 
 
