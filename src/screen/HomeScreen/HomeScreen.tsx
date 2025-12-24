@@ -1,4 +1,8 @@
-import React, { useCallback, useRef, useState, } from 'react';
+/* eslint-disable prettier/prettier */
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable react-native/no-inline-styles */
+
+import React, { useCallback, useRef, useState } from 'react';
 import {
   Image,
   SafeAreaView,
@@ -15,16 +19,16 @@ import IMAGES from '../../assets/images';
 import { CustomText } from '../../components/CustomText';
 import COLORS from '../../utils/Colors';
 import styles from './style';
-import { useFocusEffect} from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { RootTabParamList } from '../../types';
 import { t } from 'i18next';
 import axios from 'axios';
-import { Base_Url } from '../../utils/ApiUrl';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {
-  appNameMap, iconMap,
-} from '../../components/Appname';
+import {allowedAndroidApps, alwaysExclude, appNameMap, iconMap} from '../../components/Appname';
+import { getDeviceId } from '../../service/DeviceAuthService';
+import { Base_Url } from '../../apiEndpoint/ApiEndpoint';
 
 
 interface AppItem {
@@ -85,12 +89,12 @@ const HomeScreen: React.FC<Props> = () => {
     AppUsage.checkPackagePermission().then((hasPermission) => {
       if (!hasPermission) {
         AppUsage.requestUsagePermission();
-       
+
       } else {
         fetchAppUsage(timeRange);
       }
     }).catch(() => {
-      
+
     });
   };
 
@@ -152,7 +156,7 @@ const HomeScreen: React.FC<Props> = () => {
     if (lastPart && lastPart.length > 1) {
       return lastPart.charAt(0).toUpperCase() + lastPart.slice(1);
     }
-    return t("unknown_app");
+    return t('unknown_app');
   };
 
   const getAppIcon = (packageName: string, isOtherApp: boolean = false) => {
@@ -179,7 +183,7 @@ const HomeScreen: React.FC<Props> = () => {
 
   const formatLastVisibleTime = (timestamp: number): string => {
     const date = new Date(timestamp);
-    
+
     const hours = date.getHours().toString().padStart(2, '0');
     const minutes = date.getMinutes().toString().padStart(2, '0');
     const seconds = date.getSeconds().toString().padStart(2, '0');
@@ -188,15 +192,15 @@ const HomeScreen: React.FC<Props> = () => {
 
   const sendAppUsageData = async (rawStats: any[], totalUsageTime: number, startTime: number, endTime: number) => {
     try {
-      const DEVICE_ID = await AsyncStorage.getItem('device_id');
+      const DEVICE_ID = await getDeviceId();
 
       const payload = {
         deviceId: DEVICE_ID,
-        timeRange: "today",
+        timeRange: 'today',
 
         startTime: new Date(startTime).toLocaleString(),
         endTime: new Date(endTime).toLocaleString(),
-        totalUsageTime: formatForegroundTime(totalUsageTime) || "0",
+        totalUsageTime: formatForegroundTime(totalUsageTime) || '0',
         apps: rawStats.map(app => ({
           packageName: app.packageName,
           name: formatAppName(app.packageName),
@@ -204,20 +208,20 @@ const HomeScreen: React.FC<Props> = () => {
           lastVisibleTime: formatLastVisibleTime(app.lastVisibleTime || 0),
           launchCount: app.launchCount || 0,
           percentage: totalUsageTime > 0 ? (app.totalForegroundTime || 0) / totalUsageTime : 0,
-          isOtherApp: app.isOtherApp || false
-        }))
+          isOtherApp: app.isOtherApp || false,
+        })),
       };
 
-      console.log('Sending payload:', payload);
+
       const res = await axios.post(Base_Url.sendAppUsagesData, payload);
-     
-      if (res?.data?.message !== "Your device is not verified") {
+      
+      if (res?.data?.message !== 'Your device is not verified') {
         setIsApproval(true);
         return res;
 
       } else {
         setIsApproval(false);
-        return false
+        return false;
       }
     } catch (error: any) {
       console.error(' Error sending app usage data:', error);
@@ -226,97 +230,126 @@ const HomeScreen: React.FC<Props> = () => {
   };
 
   const onTabPress = async (range: TimeRange) => {
-    if (timeRange === range && appData.length > 0) return;
+    if (timeRange === range && appData.length > 0) {return;}
     setAppData([]);
     setTotalTime('0h 0m');
     setTimeRange(range);
     fetchAppUsage(range);
   };
- 
+
   const fetchAppUsage = async (range: TimeRange) => {
-  if (isFetchingRef.current) return;
-  isFetchingRef.current = true;
-  setLoading(true);
-  try {
-    const now = Date.now();
-    const startTime = getTodayStartTime();
-    const endTime = now;
-
-    const stats = await new Promise<any[]>((resolve) => {
-      AppUsage.getUsageCustomRange(String(startTime), String(endTime), resolve);
-    });
-
-    if (!stats || stats.length === 0) {
-      setAppData([]);
-      setTotalTime('0h 0m');
-      setLoading(false);
-      isFetchingRef.current = false;
-      return;
-    }
-
-    const todayStats = stats.filter(app => {
-      const foregroundTime = app.totalForegroundTime || 0;
-      const lastTime = app.lastVisibleTime || app.lastUsageTime || 0;
-      return foregroundTime > 0 && lastTime >= startTime;
-    });
-
-    const filteredStats = todayStats.filter(app => app.packageName !== 'com.apptrack');
-
-    const processedStats = filteredStats.map(app => ({
-      ...app,
-      usageTime: app.totalForegroundTime || 0
-    }));
-
-    const totalUsageTime = processedStats.reduce((sum, app) =>
-      sum + (app.totalForegroundTime || 0), 0
-    );
-
+    if (isFetchingRef.current) return;
+    isFetchingRef.current = true;
+    setLoading(true);
     try {
-      const sendResult = await sendAppUsageData(processedStats, totalUsageTime, startTime, endTime);
-      if (sendResult === false) {
-        console.log('not verified');
+      const now = Date.now();
+      const startTime = getTodayStartTime();
+      const endTime = now;
+
+      const stats = await new Promise<any[]>((resolve) => {
+        AppUsage.getUsageCustomRange(String(startTime), String(endTime), resolve);
+      });
+
+      if (!stats || stats.length === 0) {
+        setAppData([]);
+        setTotalTime('0h 0m');
+        setLoading(false);
+        isFetchingRef.current = false;
         return;
       }
+      const filteredStats = stats.filter(app => {
+        const packageName = app.packageName || '';
+        const foregroundTime = app.totalForegroundTime || 0;
+        const lastTime = app.lastVisibleTime || app.lastUsageTime || 0;
+        if (!(foregroundTime > 0 && lastTime >= startTime)) {
+          return false;
+        }
+        for (const excluded of alwaysExclude) {
+          if (packageName.startsWith(excluded)) {
+            return false;
+          }
+        }
+        for (const allowed of allowedAndroidApps) {
+          if (packageName.startsWith(allowed)) {
+            return true;
+          }
+        }
+        if (packageName.startsWith('com.android.') || packageName.startsWith('android.')) {
+          return false;
+        }
+        if (
+          /\.provider(\.|$)/.test(packageName) ||
+          /\.service(\.|$)/.test(packageName) ||
+          /\.system(\.|$)/.test(packageName) ||
+          /\.settings(\.|$)/.test(packageName)
+        ) {
+          return false;
+        }
 
-      const hasServerData = await fetchAppUsageFromServer(range);
+        return true;
+      });
 
-      if (!hasServerData) {
-        console.log('No server data found');
+      console.log('Filtered stats count:', filteredStats.length);
+      console.log('Filtered apps:', filteredStats.map(app => ({
+        name: app.packageName,
+        time: app.totalForegroundTime
+      })));
+
+      const processedStats = filteredStats.map(app => ({
+        ...app,
+        usageTime: app.totalForegroundTime || 0,
+      }));
+
+      const totalUsageTime = processedStats.reduce((sum, app) =>
+        sum + (app.totalForegroundTime || 0), 0
+      );
+
+      try {
+        const sendResult = await sendAppUsageData(processedStats, totalUsageTime, startTime, endTime);
+        if (sendResult === false) {
+          console.log('not verified');
+          return;
+        }
+
+        const hasServerData = await fetchAppUsageFromServer(range);
+
+        if (!hasServerData) {
+          console.log('No server data found');
+        }
+
+      } catch (error: any) {
+        console.log('Using local data due to server error:', error);
       }
-
-    } catch (error: any) {
-      console.log('Using local data due to server error:', error.message);
+    } catch (error) {
+      console.error('Error fetching app usage:', error);
+      
+      setAppData([]);
+      setTotalTime('0h 0m');
+    } finally {
+      setLoading(false);
+      isFetchingRef.current = false;
     }
-  } catch (error) {
-    console.error('Error fetching app usage:', error.message);
-    
-    setAppData([]);
-    setTotalTime('0h 0m');
-  } finally {
-    setLoading(false);
-    isFetchingRef.current = false;
-  }
-};
+  };
 
   const fetchAppUsageFromServer = async (range: TimeRange,) => {
     try {
-      const DEVICE_ID = await AsyncStorage.getItem('device_id');
-      if (!DEVICE_ID) return false;
+      const DEVICE_ID = await getDeviceId();
+      if (!DEVICE_ID) {return false;}
 
       const getResponse = await axios.get(
         `${Base_Url.getAppUsagesData}?device_id=${DEVICE_ID}&range=${range}`
       );
-     
+    
       if (getResponse?.data?.status === true) {
         const serverData = getResponse.data;
         if (!serverData.data || serverData.data.length === 0) {
           return false;
         }
         const mainApps: AppItem[] = [];
-       
+
         serverData.data
           .forEach((app: any, index: number) => {
-            const defaultName = app.name || app.packageName?.split('.').pop() || t("unknown");
+            const defaultName = app.name || app.packageName?.split('.').pop() || t('unknown');
             const formattedName = formatAppName(app.packageName, defaultName);
             const appItem = {
               id: index + 1,
@@ -333,7 +366,7 @@ const HomeScreen: React.FC<Props> = () => {
           });
 
         mainApps.sort((a, b) => b.rawTime - a.rawTime);
-       
+
         setAppData(mainApps.slice(0, 50));
         setTotalTime(serverData.total_time || '0h 0m');
         return true;
@@ -341,7 +374,7 @@ const HomeScreen: React.FC<Props> = () => {
       return false;
     } catch (error: any) {
       console.error('Error fetching from server:', error);
-      console.log(error)
+      console.log(error);
       return false;
     }
   };
@@ -365,17 +398,17 @@ const HomeScreen: React.FC<Props> = () => {
       </SafeAreaView>
     );
   }
-   return (
+  return (
     <SafeAreaView style={styles.container}>
       <View style={styles.headr}>
-        <CustomText type='heading' style={styles.heading}>{t("Apptrack")}</CustomText>
+        <CustomText type="heading" style={styles.heading}>{t('Apptrack')}</CustomText>
       </View>
 
       <View style={{ flexDirection: 'row', marginHorizontal: 20, marginVertical: 15 }}>
         <TouchableOpacity
           style={[
             styles.tabButton,
-            timeRange === 'today' && styles.activeTabButton
+            timeRange === 'today' && styles.activeTabButton,
           ]}
           onPress={() => onTabPress('today')}
           activeOpacity={0.7}
@@ -383,7 +416,7 @@ const HomeScreen: React.FC<Props> = () => {
         >
           <Text style={[
             styles.tabButtonText,
-            timeRange === 'today' && styles.activeTabButtonText
+            timeRange === 'today' && styles.activeTabButtonText,
           ]}>
             {t('today')}
           </Text>
@@ -392,7 +425,7 @@ const HomeScreen: React.FC<Props> = () => {
         <TouchableOpacity
           style={[
             styles.tabButton,
-            timeRange === 'month' && styles.activeTabButton
+            timeRange === 'month' && styles.activeTabButton,
           ]}
           onPress={() => onTabPress('month')}
           activeOpacity={0.7}
@@ -400,7 +433,7 @@ const HomeScreen: React.FC<Props> = () => {
         >
           <Text style={[
             styles.tabButtonText,
-            timeRange === 'month' && styles.activeTabButtonText
+            timeRange === 'month' && styles.activeTabButtonText,
           ]}>
             {t('month')}
           </Text>
@@ -413,58 +446,58 @@ const HomeScreen: React.FC<Props> = () => {
           <Text style={styles.title}>{t('totaltime')}</Text>
         </View>
         <View style={styles.timeTag}>
-          <CustomText type='title' style={styles.timeTagText}>{totalTime}</CustomText>
+          <CustomText type="title" style={styles.timeTagText}>{totalTime}</CustomText>
         </View>
       </View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
         {
-          !isApproved ?(<View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>{t("notapprovel")}</Text>
-            </View>)
-          :
-          appData.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>{t("no_app_usage_data")}</Text>
-            </View>
-          ) : (
-            <>
-              {appData.map((item: AppItem) => (
-                <View key={`main-${item.id}`} style={styles.card}>
-                  <Image style={styles.cardimg} source={item.icon} />
-                  <View style={styles.cardRight}>
-                    <View style={styles.cardRow}>
-                      <Text style={styles.appname} numberOfLines={1}>
-                        {item.name}
-                      </Text>
-                      <View style={styles.timeTag}>
-                        <Text style={styles.timeTagText}>{item.time}</Text>
-                      </View>
-                    </View>
-                    <View style={styles.cardRow}>
-                      <Text style={styles.percentageText}>
-                        {(item.percentage * 100).toFixed(1)}%
-                      </Text>
-                      {item.count > 0 && (
-                        <Text style={styles.countText}>
-                          {item.count} {t("opens")}
+          !isApproved ? (<View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>{t('notapprovel')}</Text>
+          </View>)
+            :
+            appData.length === 0 ? (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>{t('no_app_usage_data')}</Text>
+              </View>
+            ) : (
+              <>
+                {appData.map((item: AppItem) => (
+                  <View key={`main-${item.id}`} style={styles.card}>
+                    <Image style={styles.cardimg} source={item.icon} />
+                    <View style={styles.cardRight}>
+                      <View style={styles.cardRow}>
+                        <Text style={styles.appname} numberOfLines={1}>
+                          {item.name}
                         </Text>
-                      )}
+                        <View style={styles.timeTag}>
+                          <Text style={styles.timeTagText}>{item.time}</Text>
+                        </View>
+                      </View>
+                      <View style={styles.cardRow}>
+                        <Text style={styles.percentageText}>
+
+                          {(item.percentage * 100).toFixed(1)}%
+                        </Text>
+                        {item.count > 0 && (
+                          <Text style={styles.countText}>
+                            {item.count} {t('opens')}
+                          </Text>
+                        )}
+                      </View>
+                      <Progress.Bar
+                        progress={item.percentage}
+                        width={230}
+                        height={8}
+                        color={COLORS.prograssbar}
+                        unfilledColor={COLORS.background1}
+                        borderWidth={0}
+                      />
                     </View>
-                    <Progress.Bar
-                      progress={item.percentage}
-                      width={230}
-                      height={8}
-                      color={COLORS.prograssbar}
-                      unfilledColor={COLORS.background1}
-                      borderWidth={0}
-                      borderRadius={5}
-                    />
                   </View>
-                </View>
-              ))}
-            </>
-          )}
+                ))}
+              </>
+            )}
 
       </ScrollView>
     </SafeAreaView>

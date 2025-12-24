@@ -1,3 +1,6 @@
+/* eslint-disable prettier/prettier */
+/* eslint-disable no-undef */
+/* eslint-disable react-native/no-inline-styles */
 import React, { useEffect, useState } from 'react';
 import {
   Alert,
@@ -7,12 +10,11 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  ScrollView
+  ScrollView,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import {styles} from '../styles/Styles';
-// import {ScrollView} from 'react-native-gesture-handler';
-import {Formik} from 'formik';
+import { styles } from '../styles/Styles';
+import { Formik } from 'formik';
 import * as yup from 'yup';
 import { Base_Url } from '../apiEndpoint/ApiEndpoint';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -33,71 +35,72 @@ const validationSchema = yup.object().shape({
     .required('Password is required'),
 });
 
-const LoginPage = ({navigation}) => {
-  const [loading,setLoading] = useState(false);
+const LoginPage = ({ navigation }) => {
+  const [loading, setLoading] = useState(false);
 
- //Login Api
- const handleSubmit = async values => {
-  setLoading(true);
-  try {
-    const res = await axios({
-      method: 'post',
-      url: Base_Url.login,
-      data: {
-        phone_number: values.phonenumber,
-        password: values.password,
-      },
-    });
-    if (res.data.success === true) {
-      setLoading(false);
-      const token = res.data.data.token;
-      const userID=res.data.data.user_id?.toString() || ''
-      console.log("token",token,"useridd-------",userID);
+  //Login Api
+  const handleSubmit = async values => {
+    setLoading(true);
+    try {
+      const res = await axios({
+        method: 'post',
+        url: Base_Url.login,
+        data: {
+          phone_number: values.phonenumber,
+          password: values.password,
+        },
+      });
+      if (res.data.success === true) {
+        setLoading(false);
+        const token = res.data.data.token;
+        const userID = res.data.data.user_id?.toString() || '';
+        console.log('token', token, 'useridd-------', userID);
         if (token) {
           await AsyncStorage.setItem('token', token);
         }
         if (userID) {
           await AsyncStorage.setItem('user_id', userID);
         }
-      Alert.alert(res.data.message);
-      navigation.navigate('Home');
-    } else {
+        Alert.alert(res.data.message);
+        navigation.navigate('Home');
+      } else {
+        Alert.alert('Invalid credentials');
+        setLoading(false);
+      }
+    } catch (error) {
+      setLoading(false);
       Alert.alert('Invalid credentials');
-      setLoading(false)
+      console.log(error);
     }
-  } catch (error) {
-    setLoading(false);
-    Alert.alert('Invalid credentials');
-    console.log(error);
-  }
-};
+  };
 
-// get token from AsyncStorage
-const [token, setToken] = useState(null);
-useEffect(() => {
-  AsyncStorage.getItem('token').then(value => {
-    if (value !== null) {
-      setToken(value);
-      console.log('token', value);
-    }
-  });
-},[]);
-if (token) {
-  navigation.navigate('Home');
-}
+  // get token from AsyncStorage
+  const [token, setToken] = useState(null);
+  useEffect(() => {
+    AsyncStorage.getItem('token').then(value => {
+      if (value !== null) {
+        setToken(value);
+        console.log('token', value);
+      }
+    });
+  }, []);
+  if (token) {
+    navigation.navigate('Home');
+  }
   return (
-    <SafeAreaView style={{flex: 1}}>
+    <SafeAreaView style={{ flex: 1 }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{flex: 1}}>
+        style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <Formik
-            initialValues={{phonenumber: '', password: ''}}
+            initialValues={{ phonenumber: '', password: '' }}
             validationSchema={validationSchema}
             onSubmit={values => handleSubmit(values)}>
             {({
               handleChange,
               handleBlur,
+              // eslint-disable-next-line no-shadow
               handleSubmit,
               values,
               errors,
@@ -145,13 +148,13 @@ if (token) {
                       justifyContent: 'flex-end',
                       paddingTop: 10,
                     }}>
-                   <Text style={{color:'#000',fontWeight:'600',fontSize:16}}>Don't have an account? </Text>
+                    <Text style={{ color: '#000', fontWeight: '600', fontSize: 16 }}>Don't have an account? </Text>
                     <View
                       style={{
                         width: 60,
                         height: 60,
                         justifyContent: 'center',
-                        alignItems: 'center'
+                        alignItems: 'center',
                       }}>
                       <TouchableOpacity
                         onPress={() => navigation.navigate('Signup')}
@@ -172,8 +175,8 @@ if (token) {
                       </TouchableOpacity>
                     </View>
                   </View>
-                  <TouchableOpacity  style={[styles.btn, loading && { backgroundColor: '#b0bec5' }]}  onPress={handleSubmit} disabled={loading}>
-                    <Text style={styles.btntext}>{loading? 'Loading...':'Login'}</Text>
+                  <TouchableOpacity style={[styles.btn, loading && { backgroundColor: '#b0bec5' }]} onPress={handleSubmit} disabled={loading}>
+                    <Text style={styles.btntext}>{loading ? 'Loading...' : 'Login'}</Text>
                   </TouchableOpacity>
                 </View>
               </LinearGradient>

@@ -1,17 +1,21 @@
-import React, { useState, useEffect } from 'react';
+/* eslint-disable prettier/prettier */
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   ScrollView,
   Text,
   TouchableOpacity,
   View,
   Alert,
+  BackHandler,
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { getInstalledApps } from 'react-native-similar-app-check';
 import { styles } from '../styles/Styles';
+import HomeScreen from './HomeScreen/HomeScreen';
+import { base_url, Base_Url } from '../apiEndpoint/ApiEndpoint';
 
 const Home = () => {
   const navigation = useNavigation();
@@ -19,7 +23,7 @@ const Home = () => {
   const [token, setToken] = useState(null);
   const [userId, setUserId] = useState(null);
   const [matchedApps, setMatchedApps] = useState([]);
-  const [dynamicAppList, setDynamicAppList] = useState([]); // Full dynamic list with ids and names
+  const [dynamicAppList, setDynamicAppList] = useState([]);
 
   useEffect(() => {
     (async () => {
@@ -41,7 +45,7 @@ const Home = () => {
       try {
         // Fetch dynamic app list
         const res = await axios.post(
-          'https://churn.a1professionals.net/api/v1/get/appnames',
+          Base_Url.appnames,
           { operatorId: '1' },
           {
             headers: {
@@ -118,7 +122,7 @@ const Home = () => {
         };
 
         const response = await axios.post(
-          'https://churn.a1professionals.net/api/v1/appdetect',
+          Base_Url.appdetect,
           payload,
           {
             headers: {
@@ -140,7 +144,21 @@ const Home = () => {
 
     checkAndSendUserDetails();
   }, [token, userId]);
+useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        BackHandler.exitApp();
+        return true;
+      };
 
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        onBackPress
+      );
+
+      return () => subscription.remove();
+    }, [])
+  );
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem('token');
@@ -152,33 +170,7 @@ const Home = () => {
   };
 
   return (
-    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-      <View style={styles.container}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Text style={[styles.heading, { flex: 2 }]}>My Dashboard</Text>
-          <TouchableOpacity onPress={handleLogout} style={{ flex: 1, alignItems: 'flex-end' }}>
-            <Text style={{ fontWeight: '600', fontSize: 20, color: '#EE14D8' }}>Logout</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={{ flex: 1, paddingTop: 40, paddingBottom: 40 }}>
-          <TouchableOpacity style={{ flex: 1 }} onPress={() => navigation.navigate('Credits')}>
-            <View style={styles.dashboardbox}>
-              <Text style={styles.title}>Credits</Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity style={{ flex: 1 }} onPress={() => navigation.navigate('Tutorials')}>
-            <View style={styles.dashboardbox}>
-              <Text style={styles.title}>Tutorials and Guides</Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity style={{ flex: 1 }} onPress={() => navigation.navigate('Tips')}>
-            <View style={styles.dashboardbox}>
-              <Text style={styles.title}>Tips</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </ScrollView>
+    <HomeScreen/>
   );
 };
 
