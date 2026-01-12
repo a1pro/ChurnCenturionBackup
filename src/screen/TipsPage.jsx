@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {ScrollView, Text, View} from 'react-native';
 import {styles} from '../styles/Styles';
 

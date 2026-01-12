@@ -54,7 +54,6 @@ const LoginPage = ({ navigation }) => {
         setLoading(false);
         const token = res.data.data.token;
         const userID = res.data.data.user_id?.toString() || '';
-        console.log('token', token, 'useridd-------', userID);
         if (token) {
           await AsyncStorage.setItem('token', token);
         }
@@ -62,7 +61,7 @@ const LoginPage = ({ navigation }) => {
           await AsyncStorage.setItem('user_id', userID);
         }
         Alert.alert(res.data.message);
-        navigation.navigate('Home');
+        navigation.navigate('Splash2', { phoneNumber: values.phonenumber });
       } else {
         Alert.alert('Invalid credentials');
         setLoading(false);
@@ -80,7 +79,7 @@ const LoginPage = ({ navigation }) => {
     AsyncStorage.getItem('token').then(value => {
       if (value !== null) {
         setToken(value);
-        console.log('token', value);
+
       }
     });
   }, []);

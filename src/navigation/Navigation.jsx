@@ -9,6 +9,8 @@ import CreditsPage from '../screen/CreditsPage';
 import TutorialsPage from '../screen/TutorialsPage';
 import TipsPage from '../screen/TipsPage';
 
+import Splash2 from '../screen/Splash2';
+
 const Stack = createStackNavigator();
 
 const Navigation = () => {
@@ -55,6 +57,11 @@ const Navigation = () => {
         name="Tips"
         component={TipsPage}
         options={{headerShown: true}}
+      />
+      <Stack.Screen
+        name="Splash2"
+        component={Splash2}
+        options={{headerShown: false}}
       />
     </Stack.Navigator>
   );

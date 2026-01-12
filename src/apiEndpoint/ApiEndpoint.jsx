@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 
-export const base_url = 'https://churn.a1professionals.net/api/v1';
+export const base_url = 'https://churncenturion.com/api/v1';
 
 
 

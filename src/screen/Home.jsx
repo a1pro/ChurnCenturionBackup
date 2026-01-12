@@ -54,7 +54,6 @@ const Home = () => {
             },
           }
         );
-
         if (!(res.data.success && Array.isArray(res.data.data))) {
           console.warn('Unexpected API response structure:', res.data);
           return;
@@ -97,9 +96,6 @@ const Home = () => {
         const matchedAppNames = matched
           .map(app => app.appName)
           .filter(Boolean);
-
-        console.log('Matched app names:', matchedAppNames);
-        console.log('Matched app IDs:', matchedAppIds);
 
         // Device info
         const deviceId = await DeviceInfo.getUniqueId();

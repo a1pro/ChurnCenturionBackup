@@ -7,9 +7,6 @@ export const getDeviceId = async () => {
   return await DeviceInfo.getUniqueId();
 };
 
-// export const generateToken = async () => {
-//   return `device_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-// };
 
 export const saveAuthToken = async () => {
   const deviceId = await getDeviceId();
@@ -17,10 +14,6 @@ export const saveAuthToken = async () => {
   await AsyncStorage.setItem('device_id', deviceId);
   await AsyncStorage.setItem('login_time', Date.now().toString());
 };
-
-// export const getStoredToken = async () => {
-//   return await AsyncStorage.getItem('token');
-// };
 
 export const isDeviceRegistered = async () => {
   const deviceId = await getDeviceId();

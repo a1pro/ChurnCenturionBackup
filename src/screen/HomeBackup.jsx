@@ -39,7 +39,6 @@ const Home = () => {
         if (userDeviceDetails) {
           sendUserDetails();
         }
-        console.log(`You have already installed similar apps: ${similarApps}`);
       } else {
         Alert.alert('No Similar Apps Detected');
       }
@@ -79,7 +78,6 @@ const Home = () => {
         setUserId(userIdValue);
         if (value !== null) {
           setToken(value);
-          console.log('Token:', value);
         }
       } catch (error) {
         console.error('Error fetching token:', error);
@@ -113,10 +111,7 @@ const Home = () => {
         }
       );
 
-      console.log('res', res);
-
       if (res.status === 200) {
-        console.log('User details sent successfully:', res.data);
         Alert.alert('Success', 'User details sent successfully');
       } else {
         console.error('Unexpected response status:', res.status);

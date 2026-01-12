@@ -2,7 +2,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-native/no-inline-styles */
 
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState, useEffect } from 'react';
 import {
   Image,
   SafeAreaView,
@@ -11,6 +11,8 @@ import {
   View,
   TouchableOpacity,
   ActivityIndicator,
+
+  AppState,
 } from 'react-native';
 import * as Progress from 'react-native-progress';
 import AppUsage from 'react-native-app-usage';
@@ -26,15 +28,14 @@ import { t } from 'i18next';
 import axios from 'axios';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {allowedAndroidApps, alwaysExclude, appNameMap, iconMap} from '../../components/Appname';
+import { allowedAndroidApps, alwaysExclude, appNameMap } from '../../components/Appname';
 import { getDeviceId } from '../../service/DeviceAuthService';
 import { Base_Url } from '../../apiEndpoint/ApiEndpoint';
-
+import DynamicAppIcon from '../../components/AppIcon';
 
 interface AppItem {
   id: number;
   name: string;
-  icon: any;
   time: string;
   rawTime: number;
   count: number;
@@ -52,8 +53,186 @@ const HomeScreen: React.FC<Props> = () => {
   const [isApproved, setIsApproval] = useState<Boolean>(true);
   const [timeRange, setTimeRange] = useState<TimeRange>('today');
   const [loading, setLoading] = useState(false);
+  // const [syncing, setSyncing] = useState(false);
+  const [midnightTimer, setMidnightTimer] = useState<NodeJS.Timeout | null>(null);
+  const [minuteChecker, setMinuteChecker] = useState<NodeJS.Timeout | null>(null);
 
   const isFetchingRef = useRef(false);
+
+  // Background Service Functions
+  const initializeBackgroundService = async () => {
+    await scheduleMidnightSync();
+    startMinuteChecker();
+    setupAppStateListener();
+  };
+
+  const scheduleMidnightSync = async () => {
+    try {
+      // Clear existing timer
+      if (midnightTimer) {
+        clearTimeout(midnightTimer);
+      }
+
+      // Calculate time until 11:59:59 PM
+      const now = new Date();
+      const midnight = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        23, 59, 59, 0
+      );
+
+      let delay = midnight.getTime() - now.getTime();
+
+      // If already past midnight, schedule for tomorrow
+      if (delay < 0) {
+        delay += 24 * 60 * 60 * 1000;
+      }
+
+      const timer = setTimeout(async () => {
+        await executeMidnightSync();
+        await scheduleMidnightSync();
+      }, delay);
+
+      setMidnightTimer(timer);
+      await AsyncStorage.setItem('midnight_sync_scheduled', new Date().toISOString());
+      await AsyncStorage.setItem('next_sync_time', (now.getTime() + delay).toString());
+
+    } catch (error) {
+      console.error('❌ Error scheduling midnight sync:', error);
+    }
+  };
+
+  const startMinuteChecker = () => {
+    if (minuteChecker) {
+      clearInterval(minuteChecker);
+    }
+    const interval = setInterval(async () => {
+      try {
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+
+        if (hours === 23 && minutes >= 55) {
+
+          const today = new Date().toDateString();
+          const lastSync = await AsyncStorage.getItem('last_midnight_sync');
+
+          if (!lastSync || new Date(lastSync).toDateString() !== today) {
+            await executeMidnightSync();
+          } else {
+            console.log('Already synced today');
+          }
+        }
+      } catch (error) {
+        console.error('Minute checker error:', error);
+      }
+    }, 60 * 1000);
+
+    setMinuteChecker(interval);
+  };
+
+  const executeMidnightSync = async () => {
+    try {
+      const today = new Date().toDateString();
+      const lastSync = await AsyncStorage.getItem('last_midnight_sync');
+
+      if (lastSync && new Date(lastSync).toDateString() === today) {
+        return;
+      }
+      const now = Date.now();
+      const todayStart = getTodayStartTime();
+
+      const stats = await new Promise<any[]>((resolve) => {
+        AppUsage.getUsageCustomRange(String(todayStart), String(now), resolve);
+      });
+
+      if (stats && stats.length > 0) {
+        const totalUsageTime = stats.reduce(
+          (sum, app) => sum + (app.totalForegroundTime || 0),
+          0
+        );
+        await sendAppUsageData(stats, totalUsageTime, todayStart, now);
+        await AsyncStorage.setItem('last_midnight_sync', new Date().toISOString());
+        await AsyncStorage.setItem('last_sync_success', new Date().toISOString());
+      } else {
+        console.log('No usage data to sync');
+      }
+
+    } catch (error) {
+      console.error('Midnight sync error:', error);
+      await storeSyncError(error);
+    }
+  };
+
+  const storeSyncError = async (error: any) => {
+    try {
+      const errorLogs = await AsyncStorage.getItem('sync_error_logs');
+      const logs = errorLogs ? JSON.parse(errorLogs) : [];
+
+      logs.push({
+        timestamp: new Date().toISOString(),
+        error: error.message || 'Unknown error',
+      })
+      if (logs.length > 10) {
+        logs.splice(0, logs.length - 10);
+      }
+
+      await AsyncStorage.setItem('sync_error_logs', JSON.stringify(logs));
+    } catch (err) {
+      console.error('Error storing sync error:', err);
+    }
+  };
+
+  const setupAppStateListener = () => {
+    AppState.addEventListener('change', async (nextAppState) => {
+
+      if (nextAppState === 'active') {
+        await checkMissedSync();
+        await scheduleMidnightSync();
+      }
+    });
+  };
+
+  const checkMissedSync = async () => {
+    try {
+      const today = new Date().toDateString();
+      const lastSync = await AsyncStorage.getItem('last_midnight_sync');
+
+      if (!lastSync || new Date(lastSync).toDateString() !== today) {
+        const now = new Date();
+        const hours = now.getHours();
+
+        if (hours >= 0 && hours <= 6) {
+          await executeMidnightSync();
+        }
+      }
+    } catch (error) {
+      console.error('Error checking missed sync:', error);
+    }
+  };
+
+  const cleanupBackgroundService = () => {
+
+    if (midnightTimer) {
+      clearTimeout(midnightTimer);
+      setMidnightTimer(null);
+    }
+
+    if (minuteChecker) {
+      clearInterval(minuteChecker);
+      setMinuteChecker(null);
+    }
+  };
+
+  useEffect(() => {
+    initializeBackgroundService();
+
+    return () => {
+      cleanupBackgroundService();
+    };
+  }, []);
+
   const getTodayStartTime = (): number => {
     const now = new Date();
 
@@ -66,7 +245,6 @@ const HomeScreen: React.FC<Props> = () => {
     return todayStart.getTime();
   };
 
-
   const checkNewDay = async () => {
     try {
       const now = new Date();
@@ -77,7 +255,6 @@ const HomeScreen: React.FC<Props> = () => {
 
         await AsyncStorage.setItem('today_date_key', todayKey);
         await AsyncStorage.removeItem('last_sync_time');
-
 
       }
     } catch (error) {
@@ -159,20 +336,6 @@ const HomeScreen: React.FC<Props> = () => {
     return t('unknown_app');
   };
 
-  const getAppIcon = (packageName: string, isOtherApp: boolean = false) => {
-    if (isOtherApp) {
-      return IMAGES.univercel || IMAGES.univercel;
-    }
-    if (iconMap[packageName]) {
-      return iconMap[packageName];
-    }
-    for (const key in iconMap) {
-      if (packageName.includes(key.split('.')[1])) {
-        return iconMap[key];
-      }
-    }
-    return IMAGES.univercel;
-  };
   const formatForegroundTime = (ms: number): string => {
     const totalSeconds = Math.floor(ms / 1000);
     const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
@@ -193,11 +356,9 @@ const HomeScreen: React.FC<Props> = () => {
   const sendAppUsageData = async (rawStats: any[], totalUsageTime: number, startTime: number, endTime: number) => {
     try {
       const DEVICE_ID = await getDeviceId();
-
       const payload = {
         deviceId: DEVICE_ID,
         timeRange: 'today',
-
         startTime: new Date(startTime).toLocaleString(),
         endTime: new Date(endTime).toLocaleString(),
         totalUsageTime: formatForegroundTime(totalUsageTime) || '0',
@@ -212,9 +373,7 @@ const HomeScreen: React.FC<Props> = () => {
         })),
       };
 
-
       const res = await axios.post(Base_Url.sendAppUsagesData, payload);
-      
       if (res?.data?.message !== 'Your device is not verified') {
         setIsApproval(true);
         return res;
@@ -230,7 +389,7 @@ const HomeScreen: React.FC<Props> = () => {
   };
 
   const onTabPress = async (range: TimeRange) => {
-    if (timeRange === range && appData.length > 0) {return;}
+    if (timeRange === range && appData.length > 0) { return; }
     setAppData([]);
     setTotalTime('0h 0m');
     setTimeRange(range);
@@ -238,7 +397,7 @@ const HomeScreen: React.FC<Props> = () => {
   };
 
   const fetchAppUsage = async (range: TimeRange) => {
-    if (isFetchingRef.current) return;
+    if (isFetchingRef.current) { return; }
     isFetchingRef.current = true;
     setLoading(true);
     try {
@@ -288,13 +447,6 @@ const HomeScreen: React.FC<Props> = () => {
 
         return true;
       });
-
-      console.log('Filtered stats count:', filteredStats.length);
-      console.log('Filtered apps:', filteredStats.map(app => ({
-        name: app.packageName,
-        time: app.totalForegroundTime
-      })));
-
       const processedStats = filteredStats.map(app => ({
         ...app,
         usageTime: app.totalForegroundTime || 0,
@@ -307,7 +459,6 @@ const HomeScreen: React.FC<Props> = () => {
       try {
         const sendResult = await sendAppUsageData(processedStats, totalUsageTime, startTime, endTime);
         if (sendResult === false) {
-          console.log('not verified');
           return;
         }
 
@@ -322,7 +473,7 @@ const HomeScreen: React.FC<Props> = () => {
       }
     } catch (error) {
       console.error('Error fetching app usage:', error);
-      
+
       setAppData([]);
       setTotalTime('0h 0m');
     } finally {
@@ -334,12 +485,12 @@ const HomeScreen: React.FC<Props> = () => {
   const fetchAppUsageFromServer = async (range: TimeRange,) => {
     try {
       const DEVICE_ID = await getDeviceId();
-      if (!DEVICE_ID) {return false;}
+      if (!DEVICE_ID) { return false; }
 
       const getResponse = await axios.get(
         `${Base_Url.getAppUsagesData}?device_id=${DEVICE_ID}&range=${range}`
       );
-    
+
       if (getResponse?.data?.status === true) {
         const serverData = getResponse.data;
         if (!serverData.data || serverData.data.length === 0) {
@@ -354,11 +505,9 @@ const HomeScreen: React.FC<Props> = () => {
             const appItem = {
               id: index + 1,
               name: formattedName,
-              icon: getAppIcon(app.packageName),
               time: app.rawTime,
               rawTime: app.rawTime,
               count: app.count || 0,
-
               percentage: app.percentage || 0,
               packageName: app.packageName,
             };
@@ -374,7 +523,6 @@ const HomeScreen: React.FC<Props> = () => {
       return false;
     } catch (error: any) {
       console.error('Error fetching from server:', error);
-      console.log(error);
       return false;
     }
   };
@@ -382,9 +530,10 @@ const HomeScreen: React.FC<Props> = () => {
   useFocusEffect(
     useCallback(() => {
       checkNewDay();
-
       requestUsagePermission();
       fetchAppUsage(timeRange);
+      checkMissedSync();
+
       return () => {
         isFetchingRef.current = false;
       };
@@ -400,6 +549,7 @@ const HomeScreen: React.FC<Props> = () => {
   }
   return (
     <SafeAreaView style={styles.container}>
+      {/* Header with sync button */}
       <View style={styles.headr}>
         <CustomText type="heading" style={styles.heading}>{t('Apptrack')}</CustomText>
       </View>
@@ -450,7 +600,7 @@ const HomeScreen: React.FC<Props> = () => {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 20 }}>
         {
           !isApproved ? (<View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>{t('notapprovel')}</Text>
@@ -464,7 +614,12 @@ const HomeScreen: React.FC<Props> = () => {
               <>
                 {appData.map((item: AppItem) => (
                   <View key={`main-${item.id}`} style={styles.card}>
-                    <Image style={styles.cardimg} source={item.icon} />
+                    <DynamicAppIcon
+                      packageName={item.packageName || ''}
+                      size={40}
+                      fallbackIcon={IMAGES.univercel}
+                      style={styles.cardimg}
+                    />
                     <View style={styles.cardRight}>
                       <View style={styles.cardRow}>
                         <Text style={styles.appname} numberOfLines={1}>
@@ -476,7 +631,6 @@ const HomeScreen: React.FC<Props> = () => {
                       </View>
                       <View style={styles.cardRow}>
                         <Text style={styles.percentageText}>
-
                           {(item.percentage * 100).toFixed(1)}%
                         </Text>
                         {item.count > 0 && (
@@ -503,5 +657,4 @@ const HomeScreen: React.FC<Props> = () => {
     </SafeAreaView>
   );
 };
-
 export default HomeScreen;
