@@ -24,13 +24,7 @@ const SplachScreen = ({navigation}) => {
           <Text style={{color: 'green'}}> Centurion</Text>
         </Text>
       </View>
-      <View style={{flex: 1}}>
-        <TouchableOpacity
-          style={styles.btn}
-          onPress={() => navigation.navigate('Login')}>
-          <Text style={styles.btntext}>Get Started</Text>
-        </TouchableOpacity>
-      </View>
+      
     </View>
   );
 };

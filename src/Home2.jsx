@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {ScrollView, Text, TouchableOpacity, View, Alert, AppState} from 'react-native';
 import {NativeModules, NativeEventEmitter} from 'react-native';
 import {styles} from '../styles/Styles';
@@ -25,7 +26,6 @@ const Home = () => {
     try {
       const currentDate = new Date().toISOString();
       await AsyncStorage.setItem('lastClosedDate', currentDate);
-      console.log('Last closed date saved:', currentDate);
     } catch (error) {
       console.error('Error saving last closed date:', error);
     }
@@ -36,7 +36,7 @@ const Home = () => {
       const value = await AsyncStorage.getItem('lastClosedDate');
       if (value !== null) {
         setLastClosedDate(value);
-        console.log('Last closed date retrieved:', value);
+
       }
     } catch (error) {
       console.error('Error fetching last closed date:', error);
@@ -52,7 +52,7 @@ const Home = () => {
         Alert.alert(
           `You have already installed similar app(s): ${similarApps}`,
         );
-        console.log(`You have already installed similar apps: ${similarApps}`);
+
 
         if (userDeviceDetails) {
           await sendUserDetails(userDeviceDetails);
@@ -75,7 +75,7 @@ const Home = () => {
       const deviceModel = await DeviceInfo.getModel();
       const deviceOs = await DeviceInfo.getSystemName();
       const deviceApiLevel = await DeviceInfo.getSystemVersion();
-      console.log('deviceApiLevel', deviceApiLevel);
+
 
       setApiVersion(deviceApiLevel);
       setDeviceId(deviceId);
@@ -90,7 +90,6 @@ const Home = () => {
         deviceOs,
         lastClosedDate,
       };
-      console.log("userInfo",userInfo);
       setUserDeviceDetails(userInfo);
     } catch (error) {
       console.error('Error getting device information:', error);
@@ -105,7 +104,7 @@ const Home = () => {
         setUserId(userIdValue);
         if (value !== null) {
           setToken(value);
-          console.log('Token:', value);
+
         }
       } catch (error) {
         console.error('Error fetching token:', error);

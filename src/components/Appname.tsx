@@ -1,9 +1,9 @@
 /* eslint-disable prettier/prettier */
-import IMAGES from '../assets/images';
+
 
 
 export const appNameMap: { [key: string]: string } = {
-  // Social Media
+
   'com.whatsapp': 'WhatsApp',
   'com.facebook.katana': 'Facebook',
   'com.facebook.system': 'Facebook',
@@ -82,43 +82,7 @@ export const appNameMap: { [key: string]: string } = {
   'com.rapido.passenger': 'Rapido',
   'com.apptrack': 'AppTrack',
 };
-export const iconMap: { [key: string]: any } = {
-  // Social Media
-  'com.whatsapp': IMAGES.whattsapp || IMAGES.univercel,
-  'com.facebook.katana': IMAGES.facebook || IMAGES.univercel,
-  'com.facebook.system': IMAGES.facebook || IMAGES.univercel,
-  'com.google.android.youtube': IMAGES.youtube || IMAGES.univercel,
-  'com.instagram.android': IMAGES.instagram || IMAGES.univercel,
-  'com.tiktok.musically': IMAGES.tiktoke || IMAGES.univercel,
-  'com.zhiliaoapp.musically': IMAGES.tiktoke || IMAGES.univercel,
-  'com.snapchat.android': IMAGES.snapchat || IMAGES.univercel,
-  'org.telegram.messenger': IMAGES.telegram || IMAGES.univercel,
 
-  // Communication
-  'com.google.android.gm': IMAGES.gmail || IMAGES.univercel,
-  'com.google.android.apps.messaging': IMAGES.messages || IMAGES.univercel,
-  'com.android.dialer': IMAGES.phone || IMAGES.univercel,
-  'com.android.contacts': IMAGES.phone || IMAGES.univercel,
-
-  // System Apps (with icons - show separately)
-  'com.android.settings': IMAGES.settings || IMAGES.univercel,
-  'com.android.camera': IMAGES.camera || IMAGES.univercel,
-  'com.miui.calculator.go': IMAGES.calculator || IMAGES.univercel,
-  'com.android.calculator2': IMAGES.calculator || IMAGES.univercel,
-  'com.truecaller': IMAGES.truecaller || IMAGES.univercel,
-  'com.android.chrome': IMAGES.chrome || IMAGES.univercel,
-  'com.android.browser': IMAGES.chrome || IMAGES.univercel,
-  'com.android.gallery3d': IMAGES.camera || IMAGES.univercel,
-  'com.google.android.apps.photos': IMAGES.camera || IMAGES.univercel,
-  'com.android.calendar.go': IMAGES.univercel,
-
-  // Your App
-  'com.apptrack': IMAGES.logo || IMAGES.univercel,
-
-  // Entertainment
-  'com.netflix.mediaclient': IMAGES.netflix || IMAGES.univercel,
-  'com.spotify.music': IMAGES.spotify || IMAGES.univercel,
-};
 export const alwaysExclude = [
   'com.android.settings.intelligence',
   'com.google.android.apps.wellbeing',

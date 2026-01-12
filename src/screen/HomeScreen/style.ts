@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {StyleSheet } from 'react-native';
 import { horizontalScale, verticalScale } from '../../utils/Metrics';
 import COLORS from '../../utils/Colors';
@@ -8,7 +9,7 @@ import COLORS from '../../utils/Colors';
     backgroundColor: COLORS.container,
     padding: 10
   },
-  
+
   headr: {
     backgroundColor: "#E9F1FF",
     marginTop: 23,
@@ -113,7 +114,7 @@ import COLORS from '../../utils/Colors';
     marginBottom: 20,
   },
    timeRangeToggle: {
-    backgroundColor: COLORS.blue, 
+    backgroundColor: COLORS.blue,
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 20,
@@ -138,7 +139,7 @@ import COLORS from '../../utils/Colors';
 },
 activeTabButton: {
   backgroundColor: COLORS.blue,
-  
+
 },
 tabButtonText: {
   color: COLORS.white,
@@ -173,7 +174,7 @@ othersCard: {
 otherAppCard: {
   marginLeft: 20,
   opacity: 0.9,
-  backgroundColor: COLORS.white 
+  backgroundColor: COLORS.white
 },
 
 toggleText: {
@@ -182,5 +183,31 @@ toggleText: {
   marginLeft: 8,
   fontWeight: '500',
 },
+syncButton: {
+    backgroundColor: COLORS.blue,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+  },
+
+  syncButtonDisabled: {
+    backgroundColor: COLORS.lightGray,
+  },
+
+  syncIcon: {
+    width: 20,
+    height: 20,
+    tintColor: '#fff',
+  },
+
+
+
 });
 export default styles;

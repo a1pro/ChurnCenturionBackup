@@ -1,5 +1,5 @@
 package com.churncenturion
-
+import com.churncenturion.AppIconPackage
 import android.app.Application
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
@@ -20,6 +20,7 @@ class MainApplication : Application(), ReactApplication {
     PackageList(this).packages.apply {
         add(InstalledAppsPackage())
         add(CustomPackage())  
+         add(AppIconPackage())
     }
 
         override fun getJSMainModuleName(): String = "index"
