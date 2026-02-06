@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import React from 'react';
 import {StyleSheet, Text, type TextProps, TextStyle} from 'react-native';
 
@@ -28,9 +29,9 @@ export function CustomText({
   onPress,
   ...rest
 }: CustomTextProps) {
-  
+
   const calculateLineHeight = (fontSize: number) => Math.ceil(fontSize * 1.1);
- 
+
   const getTypeStyle = (): TextStyle => {
     const fontSizeMap: Record<string, number> = {
       heading: styles.heading.fontSize,
