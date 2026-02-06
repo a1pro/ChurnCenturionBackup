@@ -1,4 +1,6 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable react-native/no-inline-styles */
+/* eslint-disable react/react-in-jsx-scope */
 import {ScrollView, Text, TouchableOpacity, View, Alert, AppState} from 'react-native';
 import {NativeModules, NativeEventEmitter} from 'react-native';
 import {styles} from '../styles/Styles';
@@ -55,7 +57,7 @@ const Home = () => {
 
 
         if (userDeviceDetails) {
-          await sendUserDetails(userDeviceDetails);
+          await checkAndSendUserDetails(userDeviceDetails);
         }
       } else {
         Alert.alert('No Similar Apps Detected');
@@ -70,18 +72,11 @@ const Home = () => {
 
   const getUserInfo = async () => {
     try {
-      const deviceId = await DeviceInfo.getUniqueId();
-      const deviceName = await DeviceInfo.getDeviceName();
-      const deviceModel = await DeviceInfo.getModel();
-      const deviceOs = await DeviceInfo.getSystemName();
-      const deviceApiLevel = await DeviceInfo.getSystemVersion();
-
-
-      setApiVersion(deviceApiLevel);
-      setDeviceId(deviceId);
-      setDeviceName(deviceName);
-      setDeviceModel(deviceModel);
-      setDeviceOs(deviceOs);
+      setApiVersion(await DeviceInfo.getSystemVersion());
+      setDeviceId(await DeviceInfo.getUniqueId());
+      setDeviceName(await DeviceInfo.getDeviceName());
+      setDeviceModel(await DeviceInfo.getModel());
+      setDeviceOs(await DeviceInfo.getSystemName());
 
       const userInfo = {
         deviceId,
@@ -122,7 +117,7 @@ const Home = () => {
 
       // Send user details when similar app is detected
       if (userDeviceDetails) {
-        sendUserDetails(userDeviceDetails);
+        checkAndSendUserDetails(userDeviceDetails);
       }
     };
 
@@ -177,8 +172,6 @@ const Home = () => {
         saveLastClosedDate();
       }
     });
-
-    // Retrieve the last closed date when the component mounts
     getLastClosedDate();
 
     // Cleanup
@@ -239,7 +232,6 @@ const Home = () => {
           </TouchableOpacity>
         </View>
       </View>
-      <View></View>
     </ScrollView>
   );
 };

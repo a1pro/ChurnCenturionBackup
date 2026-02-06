@@ -53,7 +53,6 @@ const HomeScreen: React.FC<Props> = () => {
   const [isApproved, setIsApproval] = useState<Boolean>(true);
   const [timeRange, setTimeRange] = useState<TimeRange>('today');
   const [loading, setLoading] = useState(false);
-  // const [syncing, setSyncing] = useState(false);
   const [midnightTimer, setMidnightTimer] = useState<NodeJS.Timeout | null>(null);
   const [minuteChecker, setMinuteChecker] = useState<NodeJS.Timeout | null>(null);
 
@@ -84,7 +83,6 @@ const HomeScreen: React.FC<Props> = () => {
 
       let delay = midnight.getTime() - now.getTime();
 
-      // If already past midnight, schedule for tomorrow
       if (delay < 0) {
         delay += 24 * 60 * 60 * 1000;
       }
@@ -99,7 +97,7 @@ const HomeScreen: React.FC<Props> = () => {
       await AsyncStorage.setItem('next_sync_time', (now.getTime() + delay).toString());
 
     } catch (error) {
-      console.error('❌ Error scheduling midnight sync:', error);
+      console.error(' Error scheduling midnight sync:', error);
     }
   };
 

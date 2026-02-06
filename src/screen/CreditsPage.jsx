@@ -1,4 +1,5 @@
-import { View,Text } from "react-native"
+/* eslint-disable prettier/prettier */
+import { View,Text } from 'react-native';
 
 const CreditsPage = ()=>{
     return(
@@ -6,5 +7,5 @@ const CreditsPage = ()=>{
             <Text>Credits Page</Text>
         </View>
     );
-}
+};
 export default CreditsPage;

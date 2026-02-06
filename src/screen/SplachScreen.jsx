@@ -1,8 +1,9 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable react-native/no-inline-styles */
 import React, {useEffect} from 'react';
 
 import {styles} from '../styles/Styles';
-import {Text, TouchableOpacity, View} from 'react-native';
+import {Text, View} from 'react-native';
 
 const SplachScreen = ({navigation}) => {
   useEffect(() => {
@@ -15,7 +16,6 @@ const SplachScreen = ({navigation}) => {
       <View style={{flex: 4, alignItems: 'center', justifyContent: 'center'}}>
         <Text
           style={{
-            // color: '#000',
             fontSize: 30,
             fontWeight: '600',
             color: 'tomato',
@@ -24,7 +24,6 @@ const SplachScreen = ({navigation}) => {
           <Text style={{color: 'green'}}> Centurion</Text>
         </Text>
       </View>
-      
     </View>
   );
 };
