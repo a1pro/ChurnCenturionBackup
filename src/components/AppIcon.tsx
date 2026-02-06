@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
- 
+/* eslint-disable @typescript-eslint/no-shadow */
+
 import React from 'react';
 import { Image,  StyleSheet, NativeModules } from 'react-native';
 
@@ -8,25 +9,25 @@ const { AppIconModule } = NativeModules;
 interface DynamicAppIconProps {
   packageName: string;
   size?: number;
-  fallbackIcon: any; 
+  fallbackIcon: any;
   style?: any;
 }
 
-const DynamicAppIcon: React.FC<DynamicAppIconProps> = ({ 
-  packageName, 
-  size = 40, 
+const DynamicAppIcon: React.FC<DynamicAppIconProps> = ({
+  packageName,
+  size = 40,
   fallbackIcon,
-  style 
+  style
 }) => {
   const [iconUri, setIconUri] = React.useState<string | null>(null);
   const [error, setError] = React.useState(false);
 
   React.useEffect(() => {
     fetchIcon();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [packageName]);
 
   const fetchIcon = async () => {
-    console.log('Fetching icon for:', packageName);
     if (!packageName) {
       setError(true);
       return;
@@ -41,27 +42,26 @@ const DynamicAppIcon: React.FC<DynamicAppIconProps> = ({
           setError(true);
         }
       } else {
-        // अगर Native Module नहीं मिला
+
         setError(true);
       }
+    // eslint-disable-next-line no-catch-shadow
     } catch (error) {
       console.log('Error fetching dynamic icon for', packageName, error);
       setError(true);
     }
   };
 
-  // अगर icon मिल गया और error नहीं है
   if (iconUri && !error) {
     return (
       <Image
         source={{ uri: iconUri }}
         style={[styles.icon, { width: size, height: size }, style]}
-        onError={() => setError(true)} // अगर image load नहीं होती
+        onError={() => setError(true)}
       />
     );
   }
 
-  // Fallback icon दिखाएँ
   return (
     <Image
       source={fallbackIcon}

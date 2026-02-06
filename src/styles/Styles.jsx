@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {Platform, StyleSheet} from 'react-native';
 
 export const styles = StyleSheet.create({
@@ -45,7 +46,7 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
   },
   input: {
-    backgroundColor: '#FFFFFF', 
+    backgroundColor: '#FFFFFF',
     borderRadius: 4,
     fontSize: 18,
     paddingLeft: 10,
@@ -55,8 +56,8 @@ export const styles = StyleSheet.create({
   text: {
     fontSize: 18,
     color: '#fff',
-    fontWeight: '500',
     marginBottom: 7,
+    fontWeight: '400',
   },
   inputWrapper: {
     marginTop: 20,
@@ -77,7 +78,7 @@ export const styles = StyleSheet.create({
     marginBottom: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor:'#FFFFFF'
+    backgroundColor: '#FFFFFF',
   },
   title: {
     fontSize: 22,
