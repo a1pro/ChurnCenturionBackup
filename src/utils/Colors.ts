@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 const COLORS = {
   appColor: '#214357',
   backgroundColor: '#FFFFFF',
@@ -12,12 +13,12 @@ const COLORS = {
   emailBck: '#FFEBEB',
   red: 'red',
   white:'#ffff',
-  container:"#F0F6FF",
-  checkbox:"#c0c5c9ff",
+  container:'#F0F6FF',
+  checkbox:'#c0c5c9ff',
   tintColor: '#214357',
   background1: '#bfcfffff',
   btnbg:'#0066FF',
-  prograssbar:"#4A90E2",
+  prograssbar:'#4A90E2',
   selectedBackground: '#e8f4fd',
 selectedProgress: '#4CAF50',
 gray: '#808080',
