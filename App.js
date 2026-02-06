@@ -9,7 +9,7 @@ import {I18nextProvider} from 'react-i18next';
 import i18n from './src/context/i18n';
 LogBox.ignoreAllLogs();
 function App() {
-  const [userDeviceDetails, setUserDeviceDetails] = useState();
+
   const [visible, setIsVisible] = useState();
 
   const requestPermission = async () => {
@@ -18,18 +18,17 @@ function App() {
       if (Platform.OS === 'android') {
         permission = PERMISSIONS.ANDROID.ACTIVITY_RECOGNITION;
       } else {
-        // Handle iOS if needed, or provide a fallback
+
         return;
       }
 
-      // Check current permission status
+
       const result = await check(permission);
       if (result === RESULTS.GRANTED) {
         Alert.alert(
           'To use this app you have to allow permission for better user experience.',
         );
       } else if (result === RESULTS.DENIED) {
-        // Request permission
         const requestResult = await request(permission);
         if (requestResult === RESULTS.GRANTED) {
           Alert.alert('Permission granted', 'You have granted the permission.');
@@ -58,5 +57,3 @@ function App() {
   );
 }
 export default App;
-
-// react-native-check-app-install

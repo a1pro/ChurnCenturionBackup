@@ -1,17 +1,18 @@
-/* eslint-disable space-infix-ops */
 /* eslint-disable prettier/prettier */
-import React, { useState, useEffect } from 'react';
+/* eslint-disable react-native/no-inline-styles */
+
+import React, { useState } from 'react';
 import {
   Text,
   TouchableOpacity,
   View,
   Alert,
-  ActivityIndicator
+  ActivityIndicator,
 } from 'react-native';
 import { styles } from '../styles/Styles';
 import axios from 'axios';
-import { Base_Url } from '../utils/ApiUrl';
 import { getDeviceId } from '../service/DeviceAuthService';
+import { Base_Url } from '../apiEndpoint/ApiEndpoint';
 
 const Splash2 = ({ navigation, route }) => {
   const phoneNumber = route?.params?.phoneNumber;
@@ -26,15 +27,15 @@ const Splash2 = ({ navigation, route }) => {
       const deviceId = await getDeviceId();
       const existId = await axios.get(`${Base_Url.exist}?deviceId=${deviceId}`);
       if (existId.data.status === true) {
-        navigation.replace("Home")
+        navigation.replace('Home');
       } else {
-        const response = await axios.post(Base_Url.register, {
+        const response = await axios.post(Base_Url.deviceRegister, {
           device_id: deviceId,
           phone: phoneNumber,
         });
         if (response.data?.status === true) {
 
-          setLoading(false)
+          setLoading(false);
           navigation.replace('Home');
         } else {
           const errorMsg = response.data?.message;
